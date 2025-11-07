@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { StoryPage as StoryPageType, InteractiveElement } from '@/data/storyContent';
-import { Volume2 } from 'lucide-react';
+import { Volume2, VolumeX } from 'lucide-react';
+import { playCharacterSpeech } from '@/lib/voiceService';
 
 interface StoryPageProps {
   page: StoryPageType;
@@ -12,10 +13,40 @@ interface StoryPageProps {
 export default function StoryPage({ page, onNext, onPrev }: StoryPageProps) {
   const [activeElement, setActiveElement] = useState<string | null>(null);
   const [clickedElements, setClickedElements] = useState<Set<string>>(new Set());
+  const [playingAudio, setPlayingAudio] = useState<HTMLAudioElement | null>(null);
+  const [isVoiceEnabled, setIsVoiceEnabled] = useState(true);
+  const [loadingVoice, setLoadingVoice] = useState<string | null>(null);
 
-  const handleElementClick = (element: InteractiveElement) => {
+  const handleElementClick = async (element: InteractiveElement) => {
     setActiveElement(element.id);
     setClickedElements(prev => new Set(Array.from(prev).concat(element.id)));
+    
+    // Play voice if enabled and element has speech
+    if (isVoiceEnabled && element.speech) {
+      try {
+        setLoadingVoice(element.id);
+        
+        // Stop any currently playing audio
+        if (playingAudio) {
+          playingAudio.pause();
+          playingAudio.currentTime = 0;
+        }
+        
+        // Play the character's voice (extract name from ID like "saint-1" -> "saint")
+        const characterName = element.id.split('-')[0];
+        const audio = await playCharacterSpeech(element.speech, characterName);
+        setPlayingAudio(audio);
+        setLoadingVoice(null);
+        
+        // Clean up when audio finishes
+        audio.onended = () => {
+          setPlayingAudio(null);
+        };
+      } catch (error) {
+        console.error('Error playing voice:', error);
+        setLoadingVoice(null);
+      }
+    }
     
     // Auto-hide speech bubble after 5 seconds
     setTimeout(() => {
@@ -60,6 +91,21 @@ export default function StoryPage({ page, onNext, onPrev }: StoryPageProps) {
           {page.title}
         </h2>
       </motion.div>
+
+      {/* Voice Toggle Button */}
+      <div className="absolute top-20 right-4 z-50">
+        <button
+          onClick={() => setIsVoiceEnabled(!isVoiceEnabled)}
+          className="p-3 bg-card/90 backdrop-blur-sm border-2 border-primary/30 rounded-full shadow-lg hover:scale-110 hover:border-primary transition-all"
+          title={isVoiceEnabled ? "Voice enabled - Click to mute" : "Voice disabled - Click to enable"}
+        >
+          {isVoiceEnabled ? (
+            <Volume2 className="w-5 h-5 text-primary" />
+          ) : (
+            <VolumeX className="w-5 h-5 text-gray-400" />
+          )}
+        </button>
+      </div>
 
       {/* Interactive Image Container */}
       <div className="relative flex-1 flex items-center justify-center px-4 pb-4">

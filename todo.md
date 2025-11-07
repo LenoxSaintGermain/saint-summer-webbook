@@ -33,3 +33,14 @@
 - [ ] Add animations and transitions library
 - [ ] Integrate PDF generation library
 - [ ] Test on multiple devices and screen sizes
+
+## ElevenLabs Voice Integration (NEW)
+- [x] Explore ElevenLabs API and available voices
+- [x] Select appropriate voices for Saint, Summer, and other characters
+- [x] Install ElevenLabs SDK and configure API key
+- [x] Create voice service utility for text-to-speech
+- [x] Integrate voice playback into StoryPage component
+- [x] Add audio controls and loading states
+- [x] Cache generated audio for performance
+- [ ] Test all character voices in browser
+- [ ] Update documentation with voice feature
