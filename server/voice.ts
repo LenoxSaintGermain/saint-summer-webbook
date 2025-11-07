@@ -19,36 +19,14 @@ const ELEVENLABS_API_URL = 'https://api.elevenlabs.io/v1';
 
 // Voice IDs for characters (from actual ElevenLabs account)
 const VOICE_IDS = {
-  saint: 'aL8uVX07RoHgtrWkiNKZ',
-  summer: 'nIlXQoXUjAQXWj0n4aa6',
-  jayden: 'bTUWaza2KXabgs1rYBOo',
-  ella: 'EXAVITQu4vr4xnSDxMaL',
-  max: '9WKYDcZ6iCiGGgOdWQym',
-  ava: 'wKMBFFgS4vVCPNJ4H0i9',
-  narrator: 'SOYHLrjzK2X1ezoPC6cr',
+  saint: process.env.ELEVENLABS_VOICE_SAINT ?? 'SOYHLrjzK2X1ezoPC6cr',
+  summer: process.env.ELEVENLABS_VOICE_SUMMER ?? 'EXAVITQu4vr4xnSDxMaL',
+  jayden: process.env.ELEVENLABS_VOICE_JAYDEN ?? 'IKne3meq5aSn9XLyUdCD',
+  ella: process.env.ELEVENLABS_VOICE_ELLA ?? 'EXAVITQu4vr4xnSDxMaL',
+  max: process.env.ELEVENLABS_VOICE_MAX ?? 'TX3LPaxmHKxFdv7VOQHJ',
+  ava: process.env.ELEVENLABS_VOICE_AVA ?? 'EXAVITQu4vr4xnSDxMaL',
+  narrator: process.env.ELEVENLABS_VOICE_NARRATOR ?? 'SOYHLrjzK2X1ezoPC6cr',
 } as const;
-
-type VoiceKey = keyof typeof VOICE_IDS;
-
-const VOICE_ENV_OVERRIDES: Record<VoiceKey, string | undefined> = {
-  saint: process.env.ELEVENLABS_VOICE_SAINT,
-  summer: process.env.ELEVENLABS_VOICE_SUMMER,
-  jayden: process.env.ELEVENLABS_VOICE_JAYDEN,
-  ella: process.env.ELEVENLABS_VOICE_ELLA,
-  max: process.env.ELEVENLABS_VOICE_MAX,
-  ava: process.env.ELEVENLABS_VOICE_AVA,
-  narrator: process.env.ELEVENLABS_VOICE_NARRATOR,
-};
-
-// Allow per-character overrides via environment variables while falling back to defaults.
-const RESOLVED_VOICE_IDS = (Object.keys(VOICE_IDS) as VoiceKey[]).reduce(
-  (acc, key) => {
-    const override = VOICE_ENV_OVERRIDES[key]?.trim();
-    acc[key] = override && override.length > 0 ? override : VOICE_IDS[key];
-    return acc;
-  },
-  {} as Record<VoiceKey, string>
-);
 
 const sanitizeCharacterName = (rawName: string) =>
   rawName
@@ -58,12 +36,9 @@ const sanitizeCharacterName = (rawName: string) =>
     .replace(/[^a-z0-9]+/g, ' ')
     .trim();
 
-const tokenize = (normalized: string) =>
-  new Set(normalized.split(/\s+/).filter((token) => token.length > 0));
-
 const voiceMatchers: Array<{
   match: (normalized: string, tokens: Set<string>) => boolean;
-  voice: VoiceKey;
+  voice: keyof typeof VOICE_IDS;
 }> = [
   {
     voice: 'saint',
@@ -107,12 +82,12 @@ export const voiceRouter = router({
 
       // Get voice ID for character
       const normalizedName = sanitizeCharacterName(characterName);
-      const tokens = tokenize(normalizedName);
-      let voiceId: string = RESOLVED_VOICE_IDS.narrator; // Default
+      const tokens = new Set(normalizedName.split(/\s+/).filter(Boolean));
+      let voiceId: string = VOICE_IDS.narrator; // Default
 
       for (const { match, voice } of voiceMatchers) {
         if (match(normalizedName, tokens)) {
-          voiceId = RESOLVED_VOICE_IDS[voice];
+          voiceId = VOICE_IDS[voice];
           break;
         }
       }
