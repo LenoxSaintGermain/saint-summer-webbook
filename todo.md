@@ -47,3 +47,6 @@
 
 ## Bug Fixes
 - [x] Fix ElevenLabs API error - created backend proxy to secure API key
+
+## Bug Fixes (Continued)
+- [x] Fix tRPC voice endpoint - correct API call format and response handling
