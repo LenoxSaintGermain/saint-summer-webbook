@@ -18,7 +18,7 @@ if (!ELEVENLABS_API_KEY) {
 const ELEVENLABS_API_URL = 'https://api.elevenlabs.io/v1';
 
 // Voice IDs for characters (from actual ElevenLabs account)
-const DEFAULT_VOICE_IDS = {
+const VOICE_IDS = {
   saint: 'aL8uVX07RoHgtrWkiNKZ',
   summer: 'nIlXQoXUjAQXWj0n4aa6',
   jayden: 'bTUWaza2KXabgs1rYBOo',
@@ -28,23 +28,27 @@ const DEFAULT_VOICE_IDS = {
   narrator: 'SOYHLrjzK2X1ezoPC6cr',
 } as const;
 
-const pickVoiceId = <K extends keyof typeof DEFAULT_VOICE_IDS>(
-  key: K,
-  envValue: string | undefined
-): string => {
-  const trimmed = envValue?.trim();
-  return trimmed && trimmed.length > 0 ? trimmed : DEFAULT_VOICE_IDS[key];
+type VoiceKey = keyof typeof VOICE_IDS;
+
+const VOICE_ENV_OVERRIDES: Record<VoiceKey, string | undefined> = {
+  saint: process.env.ELEVENLABS_VOICE_SAINT,
+  summer: process.env.ELEVENLABS_VOICE_SUMMER,
+  jayden: process.env.ELEVENLABS_VOICE_JAYDEN,
+  ella: process.env.ELEVENLABS_VOICE_ELLA,
+  max: process.env.ELEVENLABS_VOICE_MAX,
+  ava: process.env.ELEVENLABS_VOICE_AVA,
+  narrator: process.env.ELEVENLABS_VOICE_NARRATOR,
 };
 
-const VOICE_IDS: Record<keyof typeof DEFAULT_VOICE_IDS, string> = {
-  saint: pickVoiceId('saint', process.env.ELEVENLABS_VOICE_SAINT),
-  summer: pickVoiceId('summer', process.env.ELEVENLABS_VOICE_SUMMER),
-  jayden: pickVoiceId('jayden', process.env.ELEVENLABS_VOICE_JAYDEN),
-  ella: pickVoiceId('ella', process.env.ELEVENLABS_VOICE_ELLA),
-  max: pickVoiceId('max', process.env.ELEVENLABS_VOICE_MAX),
-  ava: pickVoiceId('ava', process.env.ELEVENLABS_VOICE_AVA),
-  narrator: pickVoiceId('narrator', process.env.ELEVENLABS_VOICE_NARRATOR),
-};
+// Allow per-character overrides via environment variables while falling back to defaults.
+const RESOLVED_VOICE_IDS = (Object.keys(VOICE_IDS) as VoiceKey[]).reduce(
+  (acc, key) => {
+    const override = VOICE_ENV_OVERRIDES[key]?.trim();
+    acc[key] = override && override.length > 0 ? override : VOICE_IDS[key];
+    return acc;
+  },
+  {} as Record<VoiceKey, string>
+);
 
 const sanitizeCharacterName = (rawName: string) =>
   rawName
@@ -59,7 +63,7 @@ const tokenize = (normalized: string) =>
 
 const voiceMatchers: Array<{
   match: (normalized: string, tokens: Set<string>) => boolean;
-  voice: keyof typeof VOICE_IDS;
+  voice: VoiceKey;
 }> = [
   {
     voice: 'saint',
@@ -104,11 +108,11 @@ export const voiceRouter = router({
       // Get voice ID for character
       const normalizedName = sanitizeCharacterName(characterName);
       const tokens = tokenize(normalizedName);
-      let voiceId: string = VOICE_IDS.narrator; // Default
+      let voiceId: string = RESOLVED_VOICE_IDS.narrator; // Default
 
       for (const { match, voice } of voiceMatchers) {
         if (match(normalizedName, tokens)) {
-          voiceId = VOICE_IDS[voice];
+          voiceId = RESOLVED_VOICE_IDS[voice];
           break;
         }
       }
