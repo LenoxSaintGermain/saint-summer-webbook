@@ -51,3 +51,6 @@
 ## Bug Fixes (Continued)
 - [x] Fix tRPC voice endpoint - correct API call format and response handling
 - [x] Fix tRPC batch request body format - wrap input properly
+- [x] Verify ElevenLabs API key is correctly passed in xi-api-key header
+- [x] Update voice IDs to match actual voices in ElevenLabs account (Harry, Sarah, Charlie, Liam)
+- [x] Configure ELEVENLABS_API_KEY in server environment via webdev_request_secrets

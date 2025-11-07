@@ -7,17 +7,24 @@ import { z } from 'zod';
 import { publicProcedure, router } from './_core/trpc';
 
 const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY;
+
+if (!ELEVENLABS_API_KEY) {
+  console.error('WARNING: ELEVENLABS_API_KEY is not set!');
+} else {
+  console.log('ElevenLabs API Key loaded:', ELEVENLABS_API_KEY.substring(0, 15) + '...');
+}
+
 const ELEVENLABS_API_URL = 'https://api.elevenlabs.io/v1';
 
-// Voice IDs for characters
+// Voice IDs for characters (from actual ElevenLabs account)
 const VOICE_IDS = {
   saint: 'SOYHLrjzK2X1ezoPC6cr', // Harry - young male American
-  summer: 'gmgxCAKYkPXOuFp1uuga', // Luna - young female American (excellent for audiobooks)
+  summer: 'EXAVITQu4vr4xnSDxMaL', // Sarah - young female American
   jayden: 'IKne3meq5aSn9XLyUdCD', // Charlie - young male Australian
   ella: 'EXAVITQu4vr4xnSDxMaL', // Sarah - young female American
   max: 'TX3LPaxmHKxFdv7VOQHJ', // Liam - young male American
-  ava: 'cgSgspJ2msm6clMCkdW9', // Jessica - young female American
-  narrator: 'gmgxCAKYkPXOuFp1uuga', // Luna - for environmental sounds/narrator
+  ava: 'EXAVITQu4vr4xnSDxMaL', // Sarah - young female American
+  narrator: 'SOYHLrjzK2X1ezoPC6cr', // Harry - for environmental sounds/narrator
 } as const;
 
 export const voiceRouter = router({
@@ -45,28 +52,31 @@ export const voiceRouter = router({
       else if (normalizedName.includes('max')) voiceId = VOICE_IDS.max;
       else if (normalizedName.includes('ava')) voiceId = VOICE_IDS.ava;
 
+      console.log('Making request to ElevenLabs with voice ID:', voiceId, 'for character:', characterName);
+      console.log('API key present:', !!ELEVENLABS_API_KEY);
+      console.log('API key first 15 chars:', ELEVENLABS_API_KEY?.substring(0, 15));
+
       try {
-        const response = await fetch(
-          `${ELEVENLABS_API_URL}/text-to-speech/${voiceId}`,
-          {
-            method: 'POST',
-            headers: {
-              'Accept': 'audio/mpeg',
-              'Content-Type': 'application/json',
-              'xi-api-key': ELEVENLABS_API_KEY!,
+        const url = `${ELEVENLABS_API_URL}/text-to-speech/${voiceId}`;
+        
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Accept': 'audio/mpeg',
+            'Content-Type': 'application/json',
+            'xi-api-key': ELEVENLABS_API_KEY!,
+          },
+          body: JSON.stringify({
+            text,
+            model_id: 'eleven_monolingual_v1',
+            voice_settings: {
+              stability: 0.5,
+              similarity_boost: 0.75,
+              style: 0.5,
+              use_speaker_boost: true,
             },
-            body: JSON.stringify({
-              text,
-              model_id: 'eleven_monolingual_v1',
-              voice_settings: {
-                stability: 0.5,
-                similarity_boost: 0.75,
-                style: 0.5,
-                use_speaker_boost: true,
-              },
-            }),
-          }
-        );
+          }),
+        });
 
         if (!response.ok) {
           const errorText = await response.text();
