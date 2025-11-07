@@ -18,15 +18,33 @@ if (!ELEVENLABS_API_KEY) {
 const ELEVENLABS_API_URL = 'https://api.elevenlabs.io/v1';
 
 // Voice IDs for characters (from actual ElevenLabs account)
-const VOICE_IDS = {
-  saint: process.env.ELEVENLABS_VOICE_SAINT ?? 'aL8uVX07RoHgtrWkiNKZ',
-  summer: process.env.ELEVENLABS_VOICE_SUMMER ?? 'nIlXQoXUjAQXWj0n4aa6',
-  jayden: process.env.ELEVENLABS_VOICE_JAYDEN ?? 'bTUWaza2KXabgs1rYBOo',
-  ella: process.env.ELEVENLABS_VOICE_ELLA ?? 'EXAVITQu4vr4xnSDxMaL',
-  max: process.env.ELEVENLABS_VOICE_MAX ?? '9WKYDcZ6iCiGGgOdWQym',
-  ava: process.env.ELEVENLABS_VOICE_AVA ?? 'wKMBFFgS4vVCPNJ4H0i9',
-  narrator: process.env.ELEVENLABS_VOICE_NARRATOR ?? 'SOYHLrjzK2X1ezoPC6cr',
+const DEFAULT_VOICE_IDS = {
+  saint: 'aL8uVX07RoHgtrWkiNKZ',
+  summer: 'nIlXQoXUjAQXWj0n4aa6',
+  jayden: 'bTUWaza2KXabgs1rYBOo',
+  ella: 'EXAVITQu4vr4xnSDxMaL',
+  max: '9WKYDcZ6iCiGGgOdWQym',
+  ava: 'wKMBFFgS4vVCPNJ4H0i9',
+  narrator: 'SOYHLrjzK2X1ezoPC6cr',
 } as const;
+
+const pickVoiceId = <K extends keyof typeof DEFAULT_VOICE_IDS>(
+  key: K,
+  envValue: string | undefined
+): string => {
+  const trimmed = envValue?.trim();
+  return trimmed && trimmed.length > 0 ? trimmed : DEFAULT_VOICE_IDS[key];
+};
+
+const VOICE_IDS: Record<keyof typeof DEFAULT_VOICE_IDS, string> = {
+  saint: pickVoiceId('saint', process.env.ELEVENLABS_VOICE_SAINT),
+  summer: pickVoiceId('summer', process.env.ELEVENLABS_VOICE_SUMMER),
+  jayden: pickVoiceId('jayden', process.env.ELEVENLABS_VOICE_JAYDEN),
+  ella: pickVoiceId('ella', process.env.ELEVENLABS_VOICE_ELLA),
+  max: pickVoiceId('max', process.env.ELEVENLABS_VOICE_MAX),
+  ava: pickVoiceId('ava', process.env.ELEVENLABS_VOICE_AVA),
+  narrator: pickVoiceId('narrator', process.env.ELEVENLABS_VOICE_NARRATOR),
+};
 
 const sanitizeCharacterName = (rawName: string) =>
   rawName
@@ -35,6 +53,9 @@ const sanitizeCharacterName = (rawName: string) =>
     .replace(/[\u0300-\u036f]/g, '')
     .replace(/[^a-z0-9]+/g, ' ')
     .trim();
+
+const tokenize = (normalized: string) =>
+  new Set(normalized.split(/\s+/).filter((token) => token.length > 0));
 
 const voiceMatchers: Array<{
   match: (normalized: string, tokens: Set<string>) => boolean;
@@ -82,7 +103,7 @@ export const voiceRouter = router({
 
       // Get voice ID for character
       const normalizedName = sanitizeCharacterName(characterName);
-      const tokens = new Set(normalizedName.split(/\s+/).filter(Boolean));
+      const tokens = tokenize(normalizedName);
       let voiceId: string = VOICE_IDS.narrator; // Default
 
       for (const { match, voice } of voiceMatchers) {
