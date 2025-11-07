@@ -1,0 +1,321 @@
+export interface InteractiveElement {
+  id: string;
+  type: 'character' | 'environment';
+  x: number; // percentage
+  y: number; // percentage
+  width: number; // percentage
+  height: number; // percentage
+  speech?: string;
+  sound?: string;
+  animation?: string;
+}
+
+export interface StoryPage {
+  id: number;
+  title: string;
+  image: string;
+  text: string;
+  interactiveElements: InteractiveElement[];
+}
+
+export const storyPages: StoryPage[] = [
+  {
+    id: 1,
+    title: "The Compass Glows",
+    image: "/images/01_compass_glow.png",
+    text: "In their Caribbean backyard, Saint and Summer discover an ancient compass that begins to glow with golden light. \"Look, Summer!\" Saint exclaims, his eyes wide with wonder. The compass spins wildly, then suddenly—whoosh!—they're transported to a magical island.",
+    interactiveElements: [
+      {
+        id: "saint-1",
+        type: "character",
+        x: 30,
+        y: 40,
+        width: 20,
+        height: 30,
+        speech: "Look at this, Summer! The compass is glowing!",
+      },
+      {
+        id: "summer-1",
+        type: "character",
+        x: 55,
+        y: 45,
+        width: 18,
+        height: 28,
+        speech: "It's so beautiful! What do you think it means?",
+      },
+      {
+        id: "compass",
+        type: "environment",
+        x: 45,
+        y: 60,
+        width: 10,
+        height: 10,
+        speech: "The Journey Compass pulses with ancient magic...",
+        animation: "pulse",
+      },
+    ],
+  },
+  {
+    id: 2,
+    title: "Island Arrival",
+    image: "/images/02_island_arrival.png",
+    text: "The six friends—Saint, Summer, Jayden, Ella, Max, and Ava—find themselves on a fantastical island filled with glowing mushrooms, singing flowers, and trees that seem to whisper secrets. \"This place is incredible!\" Jayden adjusts his goggles in amazement.",
+    interactiveElements: [
+      {
+        id: "saint-2",
+        type: "character",
+        x: 25,
+        y: 50,
+        width: 15,
+        height: 25,
+        speech: "Everyone stay together. We need to explore this place carefully.",
+      },
+      {
+        id: "summer-2",
+        type: "character",
+        x: 42,
+        y: 52,
+        width: 14,
+        height: 24,
+        speech: "Do you hear that? It sounds like... singing?",
+      },
+      {
+        id: "jayden",
+        type: "character",
+        x: 58,
+        y: 48,
+        width: 15,
+        height: 26,
+        speech: "My goggles are detecting some unusual energy patterns!",
+      },
+      {
+        id: "mushroom",
+        type: "environment",
+        x: 15,
+        y: 70,
+        width: 8,
+        height: 12,
+        speech: "The glowing mushrooms illuminate your path...",
+        animation: "glow",
+      },
+    ],
+  },
+  {
+    id: 3,
+    title: "Summer Wanders",
+    image: "/images/03_summer_wanders.png",
+    text: "Summer hears a mysterious bell-like sound and follows it deeper into the forest. \"Summer, wait!\" Saint calls out, but she's already disappeared behind the glowing trees. Saint feels worried—what if she gets lost?",
+    interactiveElements: [
+      {
+        id: "summer-3",
+        type: "character",
+        x: 60,
+        y: 45,
+        width: 18,
+        height: 28,
+        speech: "The sound is coming from over there... I need to follow it!",
+      },
+      {
+        id: "forest",
+        type: "environment",
+        x: 30,
+        y: 30,
+        width: 25,
+        height: 35,
+        speech: "The forest whispers ancient melodies...",
+        animation: "sway",
+      },
+      {
+        id: "bell-sound",
+        type: "environment",
+        x: 75,
+        y: 25,
+        width: 10,
+        height: 10,
+        speech: "🔔 A mysterious bell-like sound echoes through the trees...",
+        animation: "ring",
+      },
+    ],
+  },
+  {
+    id: 4,
+    title: "Listening to Shells",
+    image: "/images/04_listening_shells.png",
+    text: "Summer discovers a hidden cove filled with singing shells. She picks one up and listens carefully. \"The island is trying to tell us something,\" she realizes. \"We just need to listen.\" Her quiet wisdom reveals the path forward.",
+    interactiveElements: [
+      {
+        id: "summer-4",
+        type: "character",
+        x: 45,
+        y: 50,
+        width: 20,
+        height: 30,
+        speech: "If we listen carefully, the island will show us the way home.",
+      },
+      {
+        id: "shell-1",
+        type: "environment",
+        x: 30,
+        y: 65,
+        width: 8,
+        height: 8,
+        speech: "🐚 Listen... listen... the island sings...",
+        animation: "shimmer",
+      },
+      {
+        id: "shell-2",
+        type: "environment",
+        x: 55,
+        y: 70,
+        width: 8,
+        height: 8,
+        speech: "🐚 Follow the song... follow the light...",
+        animation: "shimmer",
+      },
+    ],
+  },
+  {
+    id: 5,
+    title: "The Singing Tree",
+    image: "/images/05_singing_tree.png",
+    text: "Following Summer's guidance, they reach an enormous Banyan tree whose roots and branches create natural hollows. Wind whistles through them, creating a deep, resonant song—the heartbeat of the island. Saint realizes he needs to listen, not just lead.",
+    interactiveElements: [
+      {
+        id: "saint-5",
+        type: "character",
+        x: 35,
+        y: 55,
+        width: 15,
+        height: 25,
+        speech: "I understand now. Leadership isn't about having all the answers—it's about listening.",
+      },
+      {
+        id: "summer-5",
+        type: "character",
+        x: 52,
+        y: 57,
+        width: 14,
+        height: 24,
+        speech: "The tree has been singing to us all along!",
+      },
+      {
+        id: "tree",
+        type: "environment",
+        x: 40,
+        y: 20,
+        width: 30,
+        height: 50,
+        speech: "🌳 The ancient Banyan sings the song of wisdom and connection...",
+        animation: "resonate",
+      },
+    ],
+  },
+  {
+    id: 6,
+    title: "Helping the Creature",
+    image: "/images/06_helping_creature.png",
+    text: "The tree's song leads them to a small creature trapped under fallen branches. Working together, using each friend's unique strengths, they free the grateful creature. \"Thank you for listening,\" it says, \"and for helping with kindness.\"",
+    interactiveElements: [
+      {
+        id: "saint-6",
+        type: "character",
+        x: 30,
+        y: 50,
+        width: 14,
+        height: 24,
+        speech: "Everyone, let's work together. We can do this!",
+      },
+      {
+        id: "summer-6",
+        type: "character",
+        x: 48,
+        y: 52,
+        width: 13,
+        height: 23,
+        speech: "Be gentle... the creature is scared.",
+      },
+      {
+        id: "creature",
+        type: "environment",
+        x: 55,
+        y: 65,
+        width: 12,
+        height: 15,
+        speech: "Thank you, kind friends! Your compassion has freed me.",
+        animation: "wiggle",
+      },
+    ],
+  },
+  {
+    id: 7,
+    title: "The Path of Light",
+    image: "/images/07_path_of_light.png",
+    text: "The freed creature touches the Journey Compass, and it glows brighter than ever. A shimmering path of light appears, leading them home. \"We found our way by listening and helping,\" Summer says softly. Saint nods, holding her hand.",
+    interactiveElements: [
+      {
+        id: "saint-7",
+        type: "character",
+        x: 35,
+        y: 50,
+        width: 15,
+        height: 26,
+        speech: "You were right, Summer. Listening was the key all along.",
+      },
+      {
+        id: "summer-7",
+        type: "character",
+        x: 52,
+        y: 52,
+        width: 14,
+        height: 25,
+        speech: "And we did it together!",
+      },
+      {
+        id: "light-path",
+        type: "environment",
+        x: 45,
+        y: 30,
+        width: 20,
+        height: 40,
+        speech: "✨ The path home shimmers with the light of harmony...",
+        animation: "sparkle",
+      },
+    ],
+  },
+  {
+    id: 8,
+    title: "Home Again",
+    image: "/images/08_return_home.png",
+    text: "They arrive back in their Caribbean backyard at sunset, forever changed. The Journey Compass still glows softly—a reminder that their adventures are just beginning. They didn't conquer the island; they listened to it. And in its song, they found not just their way home, but a deeper bond with each other.",
+    interactiveElements: [
+      {
+        id: "saint-8",
+        type: "character",
+        x: 38,
+        y: 48,
+        width: 16,
+        height: 28,
+        speech: "Every adventure teaches us something new. Today I learned to listen.",
+      },
+      {
+        id: "summer-8",
+        type: "character",
+        x: 56,
+        y: 50,
+        width: 15,
+        height: 27,
+        speech: "And I learned that my quiet voice matters too.",
+      },
+      {
+        id: "compass-end",
+        type: "environment",
+        x: 47,
+        y: 65,
+        width: 8,
+        height: 8,
+        speech: "🧭 The Journey Compass awaits your next adventure...",
+        animation: "pulse",
+      },
+    ],
+  },
+];

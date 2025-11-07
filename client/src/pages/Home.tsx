@@ -1,28 +1,65 @@
-import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
-import { APP_LOGO, APP_TITLE } from "@/const";
-import { Streamdown } from 'streamdown';
+import { useState } from 'react';
+import { AnimatePresence } from 'framer-motion';
+import { toast } from 'sonner';
+import WelcomeScreen from '@/components/WelcomeScreen';
+import Book from '@/components/Book';
+import AboutPage from '@/components/AboutPage';
+import { exportBookToPDF } from '@/lib/pdfExport';
 
-/**
- * All content in this page are only for example, replace with your own feature implementation
- * When building pages, remember your instructions in Frontend Best Practices, Design Guide and Common Pitfalls
- */
 export default function Home() {
-  // If theme is switchable in App.tsx, we can implement theme toggling like this:
-  // const { theme, toggleTheme } = useTheme();
+  const [showBook, setShowBook] = useState(false);
+  const [showAbout, setShowAbout] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
 
-  // Use APP_LOGO (as image src) and APP_TITLE if needed
+  const handleStart = () => {
+    setShowBook(true);
+  };
+
+  const handleExportPDF = async () => {
+    if (isExporting) return;
+    
+    setIsExporting(true);
+    toast.loading('Generating print-ready PDF...', {
+      description: 'This may take a moment as we prepare all pages.',
+    });
+    
+    try {
+      const filename = await exportBookToPDF({
+        quality: 0.95,
+        format: 'letter',
+      });
+      
+      toast.success('PDF exported successfully!', {
+        description: `Saved as ${filename}`,
+      });
+    } catch (error) {
+      console.error('PDF export error:', error);
+      toast.error('Failed to export PDF', {
+        description: 'Please try again or contact support.',
+      });
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleShowAbout = () => {
+    setShowAbout(true);
+  };
+
+  const handleCloseAbout = () => {
+    setShowAbout(false);
+  };
+
+  if (!showBook) {
+    return <WelcomeScreen onStart={handleStart} />;
+  }
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <main>
-        {/* Example: lucide-react for icons */}
-        <Loader2 className="animate-spin" />
-        Example Page
-        {/* Example: Streamdown for markdown rendering */}
-        <Streamdown>Any **markdown** content</Streamdown>
-        <Button variant="default">Example Button</Button>
-      </main>
-    </div>
+    <>
+      <Book onExportPDF={handleExportPDF} onShowAbout={handleShowAbout} />
+      <AnimatePresence>
+        {showAbout && <AboutPage onClose={handleCloseAbout} />}
+      </AnimatePresence>
+    </>
   );
 }
