@@ -11,21 +11,60 @@ const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY;
 if (!ELEVENLABS_API_KEY) {
   console.error('WARNING: ELEVENLABS_API_KEY is not set!');
 } else {
-  console.log('ElevenLabs API Key loaded:', ELEVENLABS_API_KEY.substring(0, 15) + '...');
+  const maskedKey = `${ELEVENLABS_API_KEY.slice(0, 6)}...${ELEVENLABS_API_KEY.slice(-4)}`;
+  console.log('ElevenLabs API Key loaded:', maskedKey);
 }
 
 const ELEVENLABS_API_URL = 'https://api.elevenlabs.io/v1';
 
 // Voice IDs for characters (from actual ElevenLabs account)
 const VOICE_IDS = {
-  saint: 'SOYHLrjzK2X1ezoPC6cr', // Harry - young male American
-  summer: 'EXAVITQu4vr4xnSDxMaL', // Sarah - young female American
-  jayden: 'IKne3meq5aSn9XLyUdCD', // Charlie - young male Australian
-  ella: 'EXAVITQu4vr4xnSDxMaL', // Sarah - young female American
-  max: 'TX3LPaxmHKxFdv7VOQHJ', // Liam - young male American
-  ava: 'EXAVITQu4vr4xnSDxMaL', // Sarah - young female American
-  narrator: 'SOYHLrjzK2X1ezoPC6cr', // Harry - for environmental sounds/narrator
+  saint: process.env.ELEVENLABS_VOICE_SAINT ?? 'SOYHLrjzK2X1ezoPC6cr',
+  summer: process.env.ELEVENLABS_VOICE_SUMMER ?? 'EXAVITQu4vr4xnSDxMaL',
+  jayden: process.env.ELEVENLABS_VOICE_JAYDEN ?? 'IKne3meq5aSn9XLyUdCD',
+  ella: process.env.ELEVENLABS_VOICE_ELLA ?? 'EXAVITQu4vr4xnSDxMaL',
+  max: process.env.ELEVENLABS_VOICE_MAX ?? 'TX3LPaxmHKxFdv7VOQHJ',
+  ava: process.env.ELEVENLABS_VOICE_AVA ?? 'EXAVITQu4vr4xnSDxMaL',
+  narrator: process.env.ELEVENLABS_VOICE_NARRATOR ?? 'SOYHLrjzK2X1ezoPC6cr',
 } as const;
+
+const sanitizeCharacterName = (rawName: string) =>
+  rawName
+    .toLowerCase()
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+
+const voiceMatchers: Array<{
+  match: (normalized: string, tokens: Set<string>) => boolean;
+  voice: keyof typeof VOICE_IDS;
+}> = [
+  {
+    voice: 'saint',
+    match: (_, tokens) => tokens.has('saint') || tokens.has('st'),
+  },
+  {
+    voice: 'summer',
+    match: (normalized) => normalized.includes('summer'),
+  },
+  {
+    voice: 'jayden',
+    match: (_, tokens) => tokens.has('jayden'),
+  },
+  {
+    voice: 'ella',
+    match: (_, tokens) => tokens.has('ella'),
+  },
+  {
+    voice: 'max',
+    match: (_, tokens) => tokens.has('max'),
+  },
+  {
+    voice: 'ava',
+    match: (_, tokens) => tokens.has('ava'),
+  },
+];
 
 export const voiceRouter = router({
   /**
@@ -42,19 +81,22 @@ export const voiceRouter = router({
       const { text, characterName } = input;
 
       // Get voice ID for character
-      const normalizedName = characterName.toLowerCase().trim();
+      const normalizedName = sanitizeCharacterName(characterName);
+      const tokens = new Set(normalizedName.split(/\s+/).filter(Boolean));
       let voiceId: string = VOICE_IDS.narrator; // Default
 
-      if (normalizedName.includes('saint')) voiceId = VOICE_IDS.saint;
-      else if (normalizedName.includes('summer')) voiceId = VOICE_IDS.summer;
-      else if (normalizedName.includes('jayden')) voiceId = VOICE_IDS.jayden;
-      else if (normalizedName.includes('ella')) voiceId = VOICE_IDS.ella;
-      else if (normalizedName.includes('max')) voiceId = VOICE_IDS.max;
-      else if (normalizedName.includes('ava')) voiceId = VOICE_IDS.ava;
+      for (const { match, voice } of voiceMatchers) {
+        if (match(normalizedName, tokens)) {
+          voiceId = VOICE_IDS[voice];
+          break;
+        }
+      }
 
       console.log('Making request to ElevenLabs with voice ID:', voiceId, 'for character:', characterName);
       console.log('API key present:', !!ELEVENLABS_API_KEY);
-      console.log('API key first 15 chars:', ELEVENLABS_API_KEY?.substring(0, 15));
+      if (ELEVENLABS_API_KEY) {
+        console.log('API key preview:', `${ELEVENLABS_API_KEY.slice(0, 6)}...`);
+      }
 
       try {
         const url = `${ELEVENLABS_API_URL}/text-to-speech/${voiceId}`;
