@@ -24,6 +24,7 @@ export async function generateSpeech(
 
   try {
     // Call backend API using tRPC batch format
+    // The batch format requires: { "0": { "json": <input> } }
     const response = await fetch('/api/trpc/voice.generateSpeech?batch=1', {
       method: 'POST',
       headers: {
@@ -32,8 +33,10 @@ export async function generateSpeech(
       credentials: 'include',
       body: JSON.stringify({
         '0': {
-          text,
-          characterName,
+          json: {
+            text,
+            characterName,
+          },
         },
       }),
     });
@@ -45,9 +48,10 @@ export async function generateSpeech(
     }
 
     const batchResult = await response.json();
-    const result = batchResult[0]?.result?.data;
+    const result = batchResult[0]?.result?.data?.json;
 
     if (!result || !result.audio) {
+      console.error('Invalid API response:', batchResult);
       throw new Error('Invalid response from voice API');
     }
 

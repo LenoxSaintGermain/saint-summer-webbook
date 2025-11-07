@@ -50,3 +50,4 @@
 
 ## Bug Fixes (Continued)
 - [x] Fix tRPC voice endpoint - correct API call format and response handling
+- [x] Fix tRPC batch request body format - wrap input properly
