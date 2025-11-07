@@ -44,3 +44,6 @@
 - [x] Cache generated audio for performance
 - [ ] Test all character voices in browser
 - [ ] Update documentation with voice feature
+
+## Bug Fixes
+- [x] Fix ElevenLabs API error - created backend proxy to secure API key
